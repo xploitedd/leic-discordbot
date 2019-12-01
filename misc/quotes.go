@@ -13,7 +13,7 @@ type Quote struct {
 	Quote *string `json:"quote"`
 }
 
-var quotes []Quote
+var quotes map[string][]Quote
 
 // LoadQuotes loads all the quotes into an array
 func LoadQuotes() error {
@@ -22,7 +22,7 @@ func LoadQuotes() error {
 		return err
 	}
 
-	quotes = make([]Quote, 0)
+	quotes = make(map[string][]Quote, 0)
 	err = json.Unmarshal(data, &quotes)
 	if err != nil {
 		return err
@@ -32,16 +32,21 @@ func LoadQuotes() error {
 }
 
 // RandomQuote obtains a random quote from the array
-func RandomQuote() *Quote {
+func RandomQuote(guildID string) *Quote {
 	if quotes == nil {
 		return nil
 	}
 
-	len := len(quotes)
+	guildQuotes := quotes[guildID]
+	if guildQuotes == nil {
+		return nil
+	}
+
+	len := len(guildQuotes)
 	if len == 0 {
 		return nil
 	}
 
 	idx := rand.Intn(len)
-	return &quotes[idx]
+	return &guildQuotes[idx]
 }

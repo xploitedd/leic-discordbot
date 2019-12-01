@@ -52,9 +52,9 @@ func (c *Command) SetDescription(description string) *Command {
 	return c
 }
 
-// ExecuteCommand finds a command by its name and executes it
+// ParseCommand finds a command by its name and executes it
 // it returns a boolean which is true if the message has a command
-func ExecuteCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreate) bool {
+func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreate) bool {
 	content := m.Content
 	if strings.HasPrefix(content, prefix) {
 		content = content[1:]

@@ -48,6 +48,7 @@ func main() {
 		return
 	}
 
+	// create a new discord session
 	discord, err = discordgo.New("Bot " + *config.DiscordToken)
 	if err != nil {
 		fmt.Println("error creating discord session:", err)
@@ -64,12 +65,14 @@ func main() {
 		fmt.Println("error occurred while loading quotes!")
 	}
 
+	// connect to the websocket
 	err = discord.Open()
 	if err != nil {
 		fmt.Println("error connecting to websocket:", err)
 		return
 	}
 
+	// run cron jobs
 	gocron.Start()
 	gocron.Every(5).Minutes().Do(playingMessageTask)
 	gocron.RunAll()
@@ -92,13 +95,12 @@ func registerCommands() {
 
 		hostname, _ := os.Hostname()
 		s.ChannelMessageSend(m.ChannelID,
-			"```\nComandos Disponíveis:\n"+
-				"---------------------\n"+helpcmd+
+			"```\nComandos Disponíveis:\n---------------------\n"+helpcmd+
 				"Running on "+hostname+"```")
 	}).SetDescription("Obtem informação sobre outros comandos")
 
 	handlers.RegisterCommand("citar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-		quote := misc.RandomQuote()
+		quote := misc.RandomQuote(m.GuildID)
 		if quote == nil {
 			s.ChannelMessageSend(m.ChannelID, "Nenhuma citação está disponível de momento!")
 			return
@@ -113,7 +115,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	handlers.ExecuteCommand(*config.CommandPrefix, s, m)
+	handlers.ParseCommand(*config.CommandPrefix, s, m)
 }
 
 func playingMessageTask() {

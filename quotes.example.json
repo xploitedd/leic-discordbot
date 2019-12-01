@@ -1,6 +1,8 @@
-[
-    {
-        "emote": ":emoteName:emoteId",
-        "quote": "Insert your quote here"
-    }
-]
+{
+    "Your server ID": [
+        {
+            "emote": "Your emote",
+            "quote": "Your quote"
+        }
+    ]
+}
