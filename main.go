@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"google.golang.org/api/option"
 
@@ -186,6 +187,22 @@ func registerCommands() {
 
 		s.ChannelMessageEdit(m.ChannelID, message.ID, response.GetQueryResult().GetFulfillmentText())
 	}).SetDescription("Para quando te sentes sozinho e precisas de alguém para falar").SetMinArgs(1)
+
+	handlers.RegisterCommand("lotaria", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+		message, err := s.ChannelMessageSend(m.ChannelID, "<:DealWithMatilde:634114750799937536>")
+		if err != nil {
+			return
+		}
+
+		time.Sleep(200 * time.Millisecond)
+		message, _ = s.ChannelMessageEdit(m.ChannelID, message.ID, message.Content+" <:HappyHernani:505418232421941268>")
+		time.Sleep(200 * time.Millisecond)
+		message, _ = s.ChannelMessageEdit(m.ChannelID, message.ID, message.Content+" <:SmugCoutinho:634011216460644373> ")
+		time.Sleep(200 * time.Millisecond)
+		message, _ = s.ChannelMessageEdit(m.ChannelID, message.ID, message.Content+" <:SmileAC:642387975900102666>")
+		time.Sleep(200 * time.Millisecond)
+		message, _ = s.ChannelMessageEdit(m.ChannelID, message.ID, "Perdeste a Lotaria!")
+	}).SetDescription("Para quando te sentes com sorte")
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
