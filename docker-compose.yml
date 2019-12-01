@@ -4,4 +4,3 @@ services:
   discord:
     build: .
     container_name: leic-bot
-    network_mode: host
