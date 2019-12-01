@@ -121,6 +121,22 @@ func registerCommands() {
 
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("> <%s> %s", *quote.Emote, *quote.Quote))
 	}).SetDescription("Cita uma das grandes lendas da LEIC no ISEL")
+
+	handlers.RegisterCommand("ban", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+		mentions := m.Mentions
+		if len(mentions) == 0 {
+			s.ChannelMessageSend(m.ChannelID, "Por favor identifica alguém para ir embora!")
+			return
+		}
+
+		user := mentions[0]
+		if user.ID == m.Author.ID {
+			s.ChannelMessageSend(m.ChannelID, "Nós compreendemos que não gostes de ti mesmo, mas é preciso saíres daqui?")
+			return
+		}
+
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Olá %s! Acabaste de ser banido: https://www.youtube.com/watch?v=FXPKJUE86d0", user.Mention()))
+	}).SetDescription("Faz ban a alguém de quem não gostes!")
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
