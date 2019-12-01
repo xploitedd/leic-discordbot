@@ -7,7 +7,10 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+
+	witai "github.com/wit-ai/wit-go"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jasonlvhit/gocron"
@@ -18,6 +21,7 @@ import (
 
 type configuration struct {
 	DiscordToken  *string   `json:"discord_token"`
+	WitAIKey      *string   `json:"wit_ai_key"`
 	CommandPrefix *string   `json:"command_prefix"`
 	PlayingWith   []*string `json:"playing_with"`
 }
@@ -25,6 +29,7 @@ type configuration struct {
 // config saves the main configuration file
 var config configuration
 var discord *discordgo.Session
+var ai *witai.Client
 
 func main() {
 	// load configuration file
@@ -43,7 +48,7 @@ func main() {
 	}
 
 	// check if the required configuration fields are available
-	if config.DiscordToken == nil || config.CommandPrefix == nil {
+	if config.DiscordToken == nil || config.CommandPrefix == nil || config.WitAIKey == nil {
 		fmt.Println("invalid configuration file!")
 		return
 	}
@@ -64,6 +69,9 @@ func main() {
 	if err != nil {
 		fmt.Println("error occurred while loading quotes!")
 	}
+
+	// initialize the ai client
+	ai = witai.NewClient(*config.WitAIKey)
 
 	// connect to the websocket
 	err = discord.Open()
@@ -144,6 +152,50 @@ func registerCommands() {
 
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Olá %s! Acabaste de ser banido: https://www.youtube.com/watch?v=FXPKJUE86d0", user.Mention()))
 	}).SetDescription("Faz ban a alguém de quem não gostes!")
+
+	handlers.RegisterCommand("falar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+		query := strings.Join(args, " ")
+		message, msgerr := s.ChannelMessageSend(m.ChannelID, "`A processar...`")
+		if msgerr != nil {
+			return
+		}
+
+		res, err := ai.Parse(&witai.MessageRequest{
+			Query: query,
+		})
+
+		if err != nil {
+			s.ChannelMessageEdit(m.ChannelID, message.ID, "Ocorreu um erro ao comunicar com o bot!")
+			return
+		}
+
+		intents, ok := res.Entities["intent"].([]interface{})
+		if !ok {
+			s.ChannelMessageEdit(m.ChannelID, message.ID, "Erro ao resolver a mensagem!")
+			return
+		}
+
+		for _, v := range intents {
+			val := v.(map[string]interface{})
+			if val["value"] == "weather" {
+				s.ChannelMessageEdit(m.ChannelID, message.ID, "Então mas... queres a papinha toda feita?! Vai lá fora e vê!")
+				return
+			} else if val["value"] == "shit" {
+				for _, v1 := range intents {
+					val = v1.(map[string]interface{})
+					if val["value"] == "yesno" {
+						s.ChannelMessageEdit(m.ChannelID, message.ID, "Obviamente!")
+						return
+					}
+				}
+
+				s.ChannelMessageEdit(m.ChannelID, message.ID, "O <@649635790569340929> claramente! Mas és estúpido?!")
+				return
+			}
+		}
+
+		s.ChannelMessageEdit(m.ChannelID, message.ID, "Não percebi o que queres dizer...")
+	}).SetDescription("Para quando te sentes sozinho e precisas de alguém para falar").SetMinArgs(1)
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
