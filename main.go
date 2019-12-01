@@ -94,9 +94,22 @@ func registerCommands() {
 		}
 
 		hostname, _ := os.Hostname()
-		s.ChannelMessageSend(m.ChannelID,
-			"```\nComandos Disponíveis:\n---------------------\n"+helpcmd+
-				"Running on "+hostname+"```")
+		s.ChannelMessageSendEmbed(m.ChannelID, &discordgo.MessageEmbed{
+			Color: 0xeb4034,
+			Title: "LEIC - ISEL -> Ajuda",
+			Fields: []*discordgo.MessageEmbedField{
+				&discordgo.MessageEmbedField{
+					Name:  "Comandos Disponíveis",
+					Value: helpcmd,
+				},
+			},
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: fmt.Sprintf("Message processed by %s", hostname),
+			},
+			Thumbnail: &discordgo.MessageEmbedThumbnail{
+				URL: s.State.User.AvatarURL("64"),
+			},
+		})
 	}).SetDescription("Obtem informação sobre outros comandos")
 
 	handlers.RegisterCommand("citar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
@@ -111,7 +124,7 @@ func registerCommands() {
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID == s.State.User.ID {
+	if m.Author.ID == s.State.User.ID || m.Author.Bot {
 		return
 	}
 
