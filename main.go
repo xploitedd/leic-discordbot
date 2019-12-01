@@ -171,7 +171,7 @@ func registerCommands() {
 
 		intents, ok := res.Entities["intent"].([]interface{})
 		if !ok {
-			s.ChannelMessageEdit(m.ChannelID, message.ID, "Erro ao resolver a mensagem!")
+			s.ChannelMessageEdit(m.ChannelID, message.ID, "E falar algo de jeito? não?")
 			return
 		}
 
