@@ -16,7 +16,7 @@ type Command struct {
 	Handler     CommandHandler
 	MinArgs     int
 	Permission  int
-	Description string
+	Description *string
 }
 
 // Commands stores all the bot commands
@@ -48,7 +48,7 @@ func (c *Command) SetPermission(permission int) *Command {
 // SetDescription allows to set a description for the command
 // This description will be available on the help command
 func (c *Command) SetDescription(description string) *Command {
-	c.Description = description
+	c.Description = &description
 	return c
 }
 

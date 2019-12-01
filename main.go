@@ -90,7 +90,9 @@ func registerCommands() {
 	handlers.RegisterCommand("ajuda", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		helpcmd := ""
 		for name, command := range handlers.Commands {
-			helpcmd += *config.CommandPrefix + name + " >> " + command.Description + "\n"
+			if command.Description != nil {
+				helpcmd += *config.CommandPrefix + name + " >> " + *command.Description + "\n"
+			}
 		}
 
 		hostname, _ := os.Hostname()
@@ -132,6 +134,11 @@ func registerCommands() {
 		user := mentions[0]
 		if user.ID == m.Author.ID {
 			s.ChannelMessageSend(m.ChannelID, "Nós compreendemos que não gostes de ti mesmo, mas é preciso saíres daqui?")
+			return
+		}
+
+		if user.ID == s.State.User.ID {
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("E se te fosses banir a ti mesmo, oh murcão? %s", m.Author.Mention()))
 			return
 		}
 
