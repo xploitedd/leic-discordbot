@@ -90,12 +90,11 @@ func registerCommands() {
 			helpcmd += *config.CommandPrefix + name + " >> " + command.Description + "\n"
 		}
 
+		hostname, _ := os.Hostname()
 		s.ChannelMessageSend(m.ChannelID,
-			"```\n"+
-				"Comandos Disponíveis:\n"+
-				"---------------------\n"+
-				helpcmd+
-				"```")
+			"```\nComandos Disponíveis:\n"+
+				"---------------------\n"+helpcmd+
+				"Running on "+hostname+"```")
 	}).SetDescription("Obtem informação sobre outros comandos")
 
 	handlers.RegisterCommand("citar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {

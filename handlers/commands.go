@@ -58,7 +58,7 @@ func ExecuteCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCre
 	content := m.Content
 	if strings.HasPrefix(content, prefix) {
 		content = content[1:]
-		splitted := strings.SplitN(content, " ", 1)
+		splitted := strings.SplitN(content, " ", 2)
 		command := Commands[splitted[0]]
 		if command == nil {
 			s.ChannelMessageSend(m.ChannelID, "Este comando não está disponível!")
