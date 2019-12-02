@@ -13,18 +13,17 @@ import (
 	"github.com/jasonlvhit/gocron"
 
 	"github.com/xploitedd/leic-discordbot/handlers"
-	ai "github.com/xploitedd/leic-discordbot/misc/ai"
-	quotes "github.com/xploitedd/leic-discordbot/misc/quotes"
+	"github.com/xploitedd/leic-discordbot/misc"
 )
 
 var discord *discordgo.Session
 
 func main() {
 	// the configuration is the first thing to be loaded
-	LoadConfig()
+	misc.LoadConfig("config.json")
 
 	// create a new discord session
-	discord, err = discordgo.New("Bot " + *Config.DiscordToken)
+	discord, err := discordgo.New("Bot " + *misc.Config.DiscordToken)
 	if err != nil {
 		fmt.Println("error creating discord session:", err)
 		return
@@ -35,7 +34,7 @@ func main() {
 	registerCommands()
 
 	// load other things
-	err = quotes.LoadQuotes()
+	err = misc.LoadQuotes()
 	if err != nil {
 		fmt.Println("error occurred while loading quotes!")
 	}
@@ -64,7 +63,7 @@ func main() {
 func registerCommands() {
 	handlers.RegisterCommand("ajuda", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		helpcmd := ""
-		for name, command := range handlers.Commands {
+		for name, command := range commands.Commands {
 			if command.Description != nil {
 				helpcmd += *config.CommandPrefix + name + " >> " + *command.Description + "\n"
 			}
@@ -122,7 +121,7 @@ func registerCommands() {
 
 	handlers.RegisterCommand("falar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		query := strings.Join(args, " ")
-		ai.SendTextQuery(s, m, query)
+		handlers.SendTextQuery(s, m, query)
 	}).SetDescription("Para quando te sentes sozinho e precisas de alguém para falar").SetMinArgs(1)
 
 	handlers.RegisterCommand("lotaria", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
@@ -160,6 +159,7 @@ func registerCommands() {
 			s.ChannelMessageEdit(m.ChannelID, msg.ID, "Perdeste a Lotaria!")
 		}
 	}).SetDescription("Para quando te sentes com sorte").SetGuildOnly(true)
+
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -181,10 +181,10 @@ func playingMessageTask() {
 }
 
 func getPlayingMessage() *string {
-	if Config.PlayingWith != nil {
-		len := len(Config.PlayingWith)
+	if misc.Config.PlayingWith != nil {
+		len := len(misc.Config.PlayingWith)
 		if len > 0 {
-			return Config.PlayingWith[rand.Intn(len)]
+			return misc.Config.PlayingWith[rand.Intn(len)]
 		}
 	}
 

@@ -10,18 +10,18 @@ import (
 	"google.golang.org/api/option"
 	dialogflowpb "google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
 
-	misc "github.com/xploitedd/leic-discord/misc"
+	"github.com/xploitedd/leic-discordbot/misc"
 )
 
-func login() (*dialogflow.SessionsClient, error) {
+func login() (context.Context, *dialogflow.SessionsClient, error) {
 	ctx := context.Background()
 	sessionClient, err := dialogflow.NewSessionsClient(ctx, option.WithCredentialsFile("dialogflow.json"))
-	return sessionClient, err
+	return ctx, sessionClient, err
 }
 
 // SendTextQuery allows to communicate with the bot via text
 func SendTextQuery(s *discordgo.Session, m *discordgo.MessageCreate, query string) {
-	session, err := login()
+	ctx, session, err := login()
 	defer session.Close()
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "Ocorreu um erro ao comunicar com o bot!")
@@ -39,7 +39,7 @@ func SendTextQuery(s *discordgo.Session, m *discordgo.MessageCreate, query strin
 		return
 	}
 
-	response, err := sessionClient.DetectIntent(ctx, &request)
+	response, err := session.DetectIntent(ctx, &request)
 	if err != nil {
 		fmt.Println(err)
 		s.ChannelMessageEdit(m.ChannelID, message.ID, "Ocorreu um erro ao comunicar com o bot!")
