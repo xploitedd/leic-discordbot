@@ -17,6 +17,7 @@ type Command struct {
 	MinArgs     int
 	Permission  int
 	Description *string
+	GuildOnly   bool
 }
 
 // Commands stores all the bot commands
@@ -25,8 +26,9 @@ var Commands = make(map[string]*Command)
 // RegisterCommand allows to register a new command to the bot
 func RegisterCommand(name string, handler CommandHandler) *Command {
 	command := &Command{
-		Name:    name,
-		Handler: handler,
+		Name:      name,
+		Handler:   handler,
+		GuildOnly: false,
 	}
 
 	Commands[name] = command
@@ -52,6 +54,12 @@ func (c *Command) SetDescription(description string) *Command {
 	return c
 }
 
+// SetGuildOnly allows for the command to be only executed while inside a guild
+func (c *Command) SetGuildOnly(guildOnly bool) *Command {
+	c.GuildOnly = guildOnly
+	return c
+}
+
 // ParseCommand finds a command by its name and executes it
 // it returns a boolean which is true if the message has a command
 func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreate) bool {
@@ -65,9 +73,16 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 			return true
 		}
 
-		if !hasPermission(s, m.Member, m.GuildID, command.Permission) {
-			s.ChannelMessageSend(m.ChannelID, "Não tens permissões suficientes para executar este comando!")
-			return true
+		if m.GuildID == "" {
+			if command.GuildOnly {
+				s.ChannelMessageSend(m.ChannelID, "Este comando apenas pode ser executado numa guild")
+				return true
+			}
+		} else {
+			if !hasPermission(s, m.Member, m.GuildID, command.Permission) {
+				s.ChannelMessageSend(m.ChannelID, "Não tens permissões suficientes para executar este comando!")
+				return true
+			}
 		}
 
 		var args []string
