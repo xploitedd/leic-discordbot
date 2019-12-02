@@ -63,9 +63,9 @@ func main() {
 func registerCommands() {
 	handlers.RegisterCommand("ajuda", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		helpcmd := ""
-		for name, command := range commands.Commands {
+		for name, command := range handlers.Commands {
 			if command.Description != nil {
-				helpcmd += *config.CommandPrefix + name + " >> " + *command.Description + "\n"
+				helpcmd += *misc.Config.CommandPrefix + name + " >> " + *command.Description + "\n"
 			}
 		}
 
@@ -89,7 +89,7 @@ func registerCommands() {
 	}).SetDescription("Obtem informação sobre outros comandos")
 
 	handlers.RegisterCommand("citar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-		quote := quotes.RandomQuote(m.GuildID)
+		quote := misc.RandomQuote(m.GuildID)
 		if quote == nil {
 			s.ChannelMessageSend(m.ChannelID, "Nenhuma citação está disponível de momento!")
 			return
@@ -167,7 +167,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	handlers.ParseCommand(*config.CommandPrefix, s, m)
+	handlers.ParseCommand(*misc.Config.CommandPrefix, s, m)
 }
 
 func playingMessageTask() {
