@@ -67,7 +67,7 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 	if strings.HasPrefix(content, prefix) {
 		content = content[1:]
 		splitted := strings.SplitN(content, " ", 2)
-		command := Commands[splitted[0]]
+		command := Commands[strings.ToLower(splitted[0])]
 		if command == nil {
 			s.ChannelMessageSend(m.ChannelID, "Este comando não está disponível!")
 			return true

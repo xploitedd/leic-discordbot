@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/jasonlvhit/gocron"
 
 	"github.com/xploitedd/leic-discordbot/handlers"
 	"github.com/xploitedd/leic-discordbot/misc"
@@ -48,16 +47,13 @@ func main() {
 	}
 
 	// run cron jobs
-	gocron.Start()
-	gocron.Every(5).Minutes().Do(playingMessageTask)
-	gocron.RunAll()
+	handlers.StartJobs(discord)
 
 	fmt.Println("Bot is now running. Press CTRL-C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
-	gocron.Remove(playingMessageTask)
 	discord.Close()
 }
 
@@ -169,25 +165,4 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	handlers.ParseCommand(*misc.Config.CommandPrefix, s, m)
-}
-
-func playingMessageTask() {
-	playingmsg := getPlayingMessage()
-	if playingmsg != nil {
-		_, time := gocron.NextRun()
-		fmt.Printf("Playing %s\n", *playingmsg)
-		fmt.Printf("Next game in %s\n", time.String())
-		discord.UpdateStatus(0, *playingmsg)
-	}
-}
-
-func getPlayingMessage() *string {
-	if misc.Config.PlayingWith != nil {
-		len := len(misc.Config.PlayingWith)
-		if len > 0 {
-			return misc.Config.PlayingWith[rand.Intn(len)]
-		}
-	}
-
-	return nil
 }
