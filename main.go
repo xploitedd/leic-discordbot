@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
@@ -123,40 +122,8 @@ func registerCommands() {
 	}).SetDescription("Para quando te sentes sozinho e precisas de alguém para falar").SetMinArgs(1)
 
 	handlers.RegisterCommand("lotaria", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
-		guild, _ := s.Guild(m.GuildID)
-		emojislen := len(guild.Emojis)
-		var msg *discordgo.Message
-		var err error
-		if emojislen < 4 {
-			msg, err = s.ChannelMessageSend(m.ChannelID, "`A jogar na lotaria...`")
-			if err != nil {
-				return
-			}
-
-			time.Sleep(1200 * time.Millisecond)
-		} else {
-			fmt.Println(guild.Emojis[0].MessageFormat())
-			msg, err = s.ChannelMessageSend(m.ChannelID, guild.Emojis[rand.Intn(emojislen)].MessageFormat())
-			if err != nil {
-				return
-			}
-
-			time.Sleep(300 * time.Millisecond)
-			msg, _ = s.ChannelMessageEdit(m.ChannelID, msg.ID, msg.Content+guild.Emojis[rand.Intn(emojislen)].MessageFormat())
-			time.Sleep(300 * time.Millisecond)
-			msg, _ = s.ChannelMessageEdit(m.ChannelID, msg.ID, msg.Content+guild.Emojis[rand.Intn(emojislen)].MessageFormat())
-			time.Sleep(300 * time.Millisecond)
-			msg, _ = s.ChannelMessageEdit(m.ChannelID, msg.ID, msg.Content+guild.Emojis[rand.Intn(emojislen)].MessageFormat())
-			time.Sleep(300 * time.Millisecond)
-		}
-
-		number := rand.Intn(101)
-		if number > 89 {
-			s.ChannelMessageEdit(m.ChannelID, msg.ID, "Ganhaste a Lotaria!")
-		} else {
-			s.ChannelMessageEdit(m.ChannelID, msg.ID, "Perdeste a Lotaria!")
-		}
-	}).SetDescription("Para quando te sentes com sorte").SetGuildOnly(true)
+		handlers.RunLottery(s, m)
+	}).SetDescription("Para quando te sentes com sorte").SetGuildOnly(true).SetRateLimit(20 * time.Second)
 
 }
 

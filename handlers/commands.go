@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -18,10 +19,12 @@ type Command struct {
 	Permission  int
 	Description *string
 	GuildOnly   bool
+	RateLimit   time.Duration
 }
 
 // Commands stores all the bot commands
 var Commands = make(map[string]*Command)
+var rateLimits = make(map[string]map[string]time.Time)
 
 // RegisterCommand allows to register a new command to the bot
 func RegisterCommand(name string, handler CommandHandler) *Command {
@@ -29,6 +32,7 @@ func RegisterCommand(name string, handler CommandHandler) *Command {
 		Name:      name,
 		Handler:   handler,
 		GuildOnly: false,
+		RateLimit: 0,
 	}
 
 	Commands[name] = command
@@ -60,6 +64,12 @@ func (c *Command) SetGuildOnly(guildOnly bool) *Command {
 	return c
 }
 
+// SetRateLimit allows to set a rate limit for the command
+func (c *Command) SetRateLimit(rateLimit time.Duration) *Command {
+	c.RateLimit = rateLimit
+	return c
+}
+
 // ParseCommand finds a command by its name and executes it
 // it returns a boolean which is true if the message has a command
 func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreate) bool {
@@ -67,7 +77,8 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 	if strings.HasPrefix(content, prefix) {
 		content = content[1:]
 		splitted := strings.SplitN(content, " ", 2)
-		command := Commands[strings.ToLower(splitted[0])]
+		cmdText := strings.ToLower(splitted[0])
+		command := Commands[cmdText]
 		if command == nil {
 			s.ChannelMessageSend(m.ChannelID, "Este comando não está disponível!")
 			return true
@@ -85,6 +96,25 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 			}
 		}
 
+		if v, ok := rateLimits[m.Author.ID]; ok {
+			if t, ok := v[cmdText]; ok {
+				since := time.Since(t)
+				if since >= command.RateLimit {
+					// remove the rate-limit
+					delete(rateLimits[m.Author.ID], cmdText)
+					if len(rateLimits[m.Author.ID]) == 0 {
+						delete(rateLimits, m.Author.ID)
+					}
+				} else {
+					// is still in the rate-limiting zone
+					s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s por favor aguarda %d segundos para executares este comando novamente!",
+						m.Author.Mention(), int((command.RateLimit-since).Seconds())))
+
+					return true
+				}
+			}
+		}
+
 		var args []string
 		var argslen int
 		if len(splitted) == 2 {
@@ -98,6 +128,9 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 		}
 
 		command.Handler(s, m, args)
+
+		rateLimits[m.Author.ID] = make(map[string]time.Time)
+		rateLimits[m.Author.ID][cmdText] = time.Now()
 		return true
 	}
 

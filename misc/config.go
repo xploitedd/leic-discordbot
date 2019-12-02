@@ -8,6 +8,7 @@ import (
 
 // Configuration stores a config file
 type Configuration struct {
+	OwnerID       *string   `json:"owner_id"`
 	DiscordToken  *string   `json:"discord_token"`
 	DialogFlowID  *string   `json:"dialogflow_id"`
 	CommandPrefix *string   `json:"command_prefix"`
@@ -33,7 +34,10 @@ func LoadConfig(filename string) error {
 	}
 
 	// check if the required configuration fields are available
-	if Config.DiscordToken == nil || Config.CommandPrefix == nil || Config.DialogFlowID == nil {
+	if Config.DiscordToken == nil ||
+		Config.CommandPrefix == nil ||
+		Config.DialogFlowID == nil ||
+		Config.OwnerID == nil {
 		return errors.New("please specify the required fields in the configuration file")
 	}
 
