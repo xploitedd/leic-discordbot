@@ -150,7 +150,7 @@ func registerCommands() {
 		}
 
 		number := rand.Intn(101)
-		if number > 97 {
+		if number > 89 {
 			s.ChannelMessageEdit(m.ChannelID, msg.ID, "Ganhaste a Lotaria!")
 		} else {
 			s.ChannelMessageEdit(m.ChannelID, msg.ID, "Perdeste a Lotaria!")
