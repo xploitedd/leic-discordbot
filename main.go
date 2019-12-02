@@ -23,7 +23,8 @@ func main() {
 	misc.LoadConfig("config.json")
 
 	// create a new discord session
-	discord, err := discordgo.New("Bot " + *misc.Config.DiscordToken)
+	var err error
+	discord, err = discordgo.New("Bot " + *misc.Config.DiscordToken)
 	if err != nil {
 		fmt.Println("error creating discord session:", err)
 		return
