@@ -54,6 +54,7 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
+	handlers.StopJobs()
 	discord.Close()
 }
 
