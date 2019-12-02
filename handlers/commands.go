@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xploitedd/leic-discordbot/misc"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -96,21 +98,23 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 			}
 		}
 
-		if v, ok := rateLimits[m.Author.ID]; ok {
-			if t, ok := v[cmdText]; ok {
-				since := time.Since(t)
-				if since >= command.RateLimit {
-					// remove the rate-limit
-					delete(rateLimits[m.Author.ID], cmdText)
-					if len(rateLimits[m.Author.ID]) == 0 {
-						delete(rateLimits, m.Author.ID)
-					}
-				} else {
-					// is still in the rate-limiting zone
-					s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s por favor aguarda %d segundos para executares este comando novamente!",
-						m.Author.Mention(), int((command.RateLimit-since).Seconds())))
+		if m.Author.ID != *misc.Config.OwnerID {
+			if v, ok := rateLimits[m.Author.ID]; ok {
+				if t, ok := v[cmdText]; ok {
+					since := time.Since(t)
+					if since >= command.RateLimit {
+						// remove the rate-limit
+						delete(rateLimits[m.Author.ID], cmdText)
+						if len(rateLimits[m.Author.ID]) == 0 {
+							delete(rateLimits, m.Author.ID)
+						}
+					} else {
+						// is still in the rate-limiting zone
+						s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s por favor aguarda %d segundos para executares este comando novamente!",
+							m.Author.Mention(), int((command.RateLimit-since).Seconds())))
 
-					return true
+						return true
+					}
 				}
 			}
 		}
@@ -129,8 +133,10 @@ func ParseCommand(prefix string, s *discordgo.Session, m *discordgo.MessageCreat
 
 		command.Handler(s, m, args)
 
-		rateLimits[m.Author.ID] = make(map[string]time.Time)
-		rateLimits[m.Author.ID][cmdText] = time.Now()
+		if m.Author.ID != *misc.Config.OwnerID {
+			rateLimits[m.Author.ID] = make(map[string]time.Time)
+			rateLimits[m.Author.ID][cmdText] = time.Now()
+		}
 		return true
 	}
 

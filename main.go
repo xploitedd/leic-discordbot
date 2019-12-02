@@ -114,12 +114,12 @@ func registerCommands() {
 		}
 
 		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Olá %s! Acabaste de ser banido: https://www.youtube.com/watch?v=FXPKJUE86d0", user.Mention()))
-	}).SetDescription("Faz ban a alguém de quem não gostes!").SetGuildOnly(true)
+	}).SetDescription("Faz ban a alguém de quem não gostes!").SetGuildOnly(true).SetRateLimit(10 * time.Second)
 
 	handlers.RegisterCommand("falar", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		query := strings.Join(args, " ")
 		handlers.SendTextQuery(s, m, query)
-	}).SetDescription("Para quando te sentes sozinho e precisas de alguém para falar").SetMinArgs(1)
+	}).SetDescription("Para quando te sentes sozinho e precisas de alguém para falar").SetMinArgs(1).SetRateLimit(5 * time.Second)
 
 	handlers.RegisterCommand("lotaria", func(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
 		handlers.RunLottery(s, m)
