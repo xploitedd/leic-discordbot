@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/xploitedd/leic-discordbot/misc"
 )
 
 var lock bool = false
@@ -47,7 +46,7 @@ func RunLottery(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	number := rand.Intn(101)
-	if number > 89 || m.Author.ID == *misc.Config.OwnerID {
+	if number > 89 {
 		s.ChannelMessageEdit(m.ChannelID, msg.ID, "Ganhaste a Lotaria!")
 	} else {
 		s.ChannelMessageEdit(m.ChannelID, msg.ID, "Perdeste a Lotaria!")
